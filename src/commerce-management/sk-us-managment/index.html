@@ -1,0 +1,103 @@
+<div class="container p-4">
+    <div class="fragment_sku_table">
+        <div class="btn-group" role="group" aria-label="Basic example">
+            <div class="btn-group" role="group">
+                <button id="btnGroupDrop1" type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            Warehouses
+            </button>
+                <div class="dropdown-menu" id="Warehouses" aria-labelledby="btnGroupDrop1">
+                    <a class="dropdown-item" href="#">Dropdown link</a>
+                    <a class="dropdown-item" href="#">Dropdown link</a>
+                </div>
+            </div>
+            <button type="button" class="btn btn-secondary" onclick="SelectAll()">Select All</button>
+            <button type="button" class="btn btn-secondary" onclick="DeleteAll()">Delete Selected</button>
+        </div>
+        <table class="table table-hover">
+            <thead>
+                <th>
+                    Select
+                </th>
+                <th>
+                    SKU
+                </th>
+            </thead>
+            <tbody id="replace">
+
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    function LoadAll(id) {
+        const response = fetch(Liferay.ThemeDisplay.getPortalURL() + "/o/headless-commerce-admin-inventory/v1.0/warehouses/" + id + "/warehouseItems?p_auth=" + Liferay.authToken).
+        then(response => response.json()).then(response => {
+            var data = response.items;
+            console.log(response.items);
+            var html = "";
+            data.forEach(element => {
+
+                var item = `<tr><td>` +
+                    `<input class="form-check-input sku" type="checkbox" value=""` + ' data-id="' + element.id + '" id="defaultCheck1"></td>' +
+                    "<td>" + element.sku + "</td>" +
+                    `</tr>`;
+                html += item;
+
+            });
+            $("#replace").replaceWith("<tbody id='replace'>" + html + "</tbody>")
+
+        });
+    }
+
+    function Load() {
+        const response = fetch(Liferay.ThemeDisplay.getPortalURL() + "/o/headless-commerce-admin-inventory/v1.0/warehouses?p_auth=" + Liferay.authToken).
+        then(response => response.json()).then(data => {
+            var html = "";
+            console.log(data);
+            data.items.forEach(element => {
+
+                var item = '<a class="dropdown-item" onclick="LoadAll(' + element.id + ')">' + element.name + '</a>';
+                html += item;
+
+            });
+            $("#Warehouses").replaceWith('<div class="dropdown-menu" id="Warehouses" aria-labelledby="btnGroupDrop1">' + html + "</body>")
+
+        });
+    }
+
+    function DeleteAll() {
+        $(".sku:checked").each((i, object) => {
+            var id = $(object).attr("data-id");
+            deleteFunction(id);
+        })
+    }
+    async function deleteFunction(id) {
+
+        // Awaiting fetch which contains 
+        // method, headers and content-type
+        fetch(Liferay.ThemeDisplay.getPortalURL() + "/o/headless-commerce-admin-inventory/v1.0/warehouseItems/" + id + "?p_auth=" + Liferay.authToken, {
+            method: 'DELETE',
+            headers: {
+                'Content-type': 'application/json'
+            }
+        }).then(response => {
+            console.log(response);
+        });
+
+        // Awaiting for the resource to be deleted
+        const resData = 'resource deleted...';
+
+        // Return response data 
+        return resData;
+    }
+
+    function SelectAll() {
+        $(".sku").each((i, object) => {
+            $(object).prop('checked', true);
+        })
+    }
+    $(document).ready(function() {
+        Load();
+    });
+</script>
